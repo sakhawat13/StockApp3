@@ -109,7 +109,7 @@ if submit:
       df4["VolAvgNDays"] = df4["Volume"].rolling(15).mean()
       df4 = df4[::-1]
       df4["LP"] = df4["Close"].shift(-1)
-      df4["Change"] = ((df4["Close"]-df4["LP"])/df4["LP"])*100
+      df4["Change"] = ((df4["Close"]-df4["LP"])/df4["LP"])
       df4 = df4[df4['VolAvgNDays'].notna()]
       pred1 = clf.predict(df4[["Close","Volume","VolAvgNDays","Change"]])
       df4["pred"] = pred1
