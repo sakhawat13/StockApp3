@@ -1,6 +1,8 @@
 import pickle
 
 
+from ta import add_all_ta_features
+
 # In[2]:
 
 
@@ -22,6 +24,9 @@ from st_aggrid.shared import JsCode
 
 filename = 'classifier_model.sav'
 clf = pickle.load(open(filename, 'rb'))
+
+
+clf2 = pickle.load(open('classifier_w_indicator_model.sav', 'rb'))
 
 
 # In[4]:
@@ -108,11 +113,21 @@ if submit:
                                         to_date= day)
       df4["VolAvgNDays"] = df4["Volume"].rolling(15).mean()
       df4 = df4[::-1]
+      
+      dfi = add_all_ta_features(df4, open="Open", high="High", low="Low", close="Price", volume="Vol.", fillna=True)
+      dfi["LP"] = dfi["Close"].shift(-1)
+      dfi["Change"] = ((dfi["Close"]-dfi["LP"])/dfi["LP"])
+      dfi = dfi[dfi['VolAvgNDays'].notna()]
+      dfin = df.drop(["Code","Date"],axis=1)
+      pred2 = clf.predict(dfin)
+      
+
       df4["LP"] = df4["Close"].shift(-1)
       df4["Change"] = ((df4["Close"]-df4["LP"])/df4["LP"])
       df4 = df4[df4['VolAvgNDays'].notna()]
       pred1 = clf.predict(df4[["Close","Volume","VolAvgNDays","Change"]])
       df4["pred"] = pred1
+      df4["Indicator_pred"] = pred2
       df4["Name"] = s
       
       if df4.shape[0] < num_day:
